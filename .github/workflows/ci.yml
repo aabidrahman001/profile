@@ -1,0 +1,42 @@
+name: git page deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+jobs:
+
+  deploy-gh-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular app
+        run: npm run build -- --base-href="/sonarqube-test/"
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          # You can use either:
+          #github_token: ${{ secrets.GITHUB_TOKEN }}
+          # OR uncomment if you prefer a PAT:
+          github_token: ${{ secrets.GH_PAT }}
+          publish_dir: ./dist/sonarqube-test/browser/
+          keep_files: true
+          force_orphan: true
